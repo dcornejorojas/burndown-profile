@@ -48,7 +48,7 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func Login(w http.ResponseWriter, req *http.Request) {
-	var login interface{}
+	login := make(map[string]interface{})
 	reqBody, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		fmt.Fprintf(w, "Insert Valid Data")

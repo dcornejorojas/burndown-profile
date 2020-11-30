@@ -16,4 +16,9 @@ type User struct {
 	Time     time.Time
 }
 
+type Login struct {
+	User int64 `json:"idUser"`
+	Password string `json:"password"`
+}
+
 type AllUsers []User
