@@ -1,9 +1,9 @@
 package main
 
 import (
-	"burndown-profile/routers"
 	"net/http"
 	"net/http/httptest"
+	"profile/api/routers"
 	"testing"
 
 	"github.com/gorilla/mux"
