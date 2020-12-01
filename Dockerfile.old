@@ -1,0 +1,34 @@
+FROM golang:alpine AS BUILDER
+
+ENV GO111MODULE=on
+RUN apk update && apk add --no-cache git
+WORKDIR /app
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+COPY . .
+RUN go get profile
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /bin/profile
+
+#FROM alpine:latest  
+#RUN apk --no-cache add ca-certificates
+#WORKDIR /app
+#COPY --from=BUILDER /app/ticket .
+#ENTRYPOINT [“ticket”]
+
+FROM scratch
+EXPOSE 3000
+#COPY --from=BUILDER .env .env
+COPY --from=BUILDER /bin/profile /bin/profile
+ENTRYPOINT ["/bin/profile"]
+
+#RUN go build -o $GOPATH/bin/profile $GOPATH/src/burndown-profile/main.go
+#RUN go build
+#
+#FROM scratch
+##RUN apk --no-cache add ca-certificates
+#WORKDIR /go/src/bin
+#COPY --from=GO_BUILDER ./profile /go/src/bin/profile
+#EXPOSE 3000
+##CMD /go/bin/profile --port 3001
+#CMD ./go/src/bin/profile --port 3000

@@ -1,17 +1,25 @@
-FROM golang:1.15.2-alpine3.10 AS build
-# Support CGO and SSL
-RUN apk --no-cache add gcc g++ make
-RUN apk add git
-WORKDIR /go/src/app
-COPY . .
-RUN go get github.com/gorilla/mux
-RUN go get github.com/joho/godotenv
-RUN go get github.com/lib/pq
-RUN GOOS=linux go build -ldflags="-s -w" -o ./bin/test ./main.go
+FROM golang:latest as builder
 
-FROM alpine:3.10
-RUN apk --no-cache add ca-certificates
-WORKDIR /usr/bin
-COPY --from=build /go/src/app/bin /go/bin
-EXPOSE 3000
-ENTRYPOINT /go/bin/test --port 3000
+ENV SERVICE_NAME=profile
+ENV APP /src/${SERVICE_NAME}/
+ENV WORKDIR ${GOPATH}${APP}
+
+WORKDIR $WORKDIR
+ADD . $WORKDIR
+
+RUN go get -d -v ./...
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o $SERVICE_NAME
+
+FROM alpine
+
+ENV SERVICE_NAME=profile
+ENV APP /src/${SERVICE_NAME}/
+ENV GOPATH /go
+ENV WORKDIR ${GOPATH}${APP}
+
+# from=builder GOPATH/src/ticket src/ticket
+COPY --from=builder ${WORKDIR}${SERVICE_NAME} $WORKDIR
+COPY --from=builder ${WORKDIR}.env $WORKDIR
+
+WORKDIR $WORKDIR
+CMD ./${SERVICE_NAME}
