@@ -5,7 +5,7 @@ import (
 )
 
 type User struct {
-	UserDni  int64  `json:"idUser"`
+	UserDni  int64  `jgorm:"primary_key;auto_increment" son:"idUser"`
 	Password string `json:"password"`
 	Name     string `json:"name"`
 	User     string `json:"user"`
@@ -17,7 +17,7 @@ type User struct {
 }
 
 type Login struct {
-	User int64 `json:"idUser"`
+	User     int64  `json:"idUser"`
 	Password string `json:"password"`
 }
 
