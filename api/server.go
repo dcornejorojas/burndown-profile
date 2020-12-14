@@ -5,7 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"profile/api/routers"
+
+	"profile/api/routes"
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
@@ -41,7 +42,7 @@ func (s *Server) Initialize(DbDriver, DbUser, DbPassword, DbPort, DbHost, DbName
 		}
 	}
 
-	s.Router = routers.InitRoutes()
+	s.Router = routes.InitRoutes()
 }
 
 func Run() {

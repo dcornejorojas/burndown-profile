@@ -1,10 +1,10 @@
 package models
 
 type Response struct {
-	Code    float64   `json:"code"`
-	Message string    `json:"message"`
-	Data    []Profile `json:"data"`
-	Error   Error     `json:"error"`
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+	Error   Error       `json:"error"`
 }
 
 type ResponseProfileList struct {

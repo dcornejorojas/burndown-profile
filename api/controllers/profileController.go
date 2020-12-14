@@ -62,7 +62,7 @@ func GetAvatars(w http.ResponseWriter, r *http.Request) {
 	err200 := models.Error{
 		Message: "Sin Error",
 		Code:    201,
-		Flag:    false,
+		Type:    false,
 	}
 	for i := range allImages {
 		allImages[i].Path = fmt.Sprint(path, "/assets/", allImages[i].Name, ".svg")
@@ -80,19 +80,19 @@ func GetAvatars(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateProfile(w http.ResponseWriter, r *http.Request) {
-	var newProfile models.Profile
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, "Insert a Valid Task Data")
 	}
+	var newProfile models.Profile
 	err200 := models.Error{
 		Message: "Sin Error",
 		Code:    201,
-		Flag:    false,
+		Type:    false,
 	}
 
 	json.Unmarshal(reqBody, &newProfile)
-	newProfile.IDProfile = int(len(allProfiles) + 1)
+	newProfile.Dni = strconv.Itoa(len(allProfiles) + 1)
 	allProfiles = append(allProfiles, newProfile)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -112,7 +112,7 @@ func ListProfiles(w http.ResponseWriter, r *http.Request) {
 	err200 := models.Error{
 		Message: "Sin Error",
 		Code:    201,
-		Flag:    false,
+		Type:    false,
 	}
 	response200 := models.Response{
 		Code:    201,
@@ -132,7 +132,7 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 		err200 := models.Error{
 			Message: "ID Invalido",
 			Code:    400,
-			Flag:    true,
+			Type:    true,
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err200)
@@ -142,12 +142,12 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 	// 	err200 := models.Error{
 	// 		Message: "Ingresar data valida para actualizar",
 	// 		Code:    400,
-	// 		Flag:    true,
+	// 		Type:    true,
 	// 	}
 	// 	json.NewEncoder(w).Encode(err200)
 	// }
 	for _, profile := range allProfiles {
-		if profile.IDProfile == profileID {
+		if profile.Dni == strconv.Itoa(profileID) {
 			profileInfo = profile
 		}
 	}
@@ -167,7 +167,7 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 		errObj := models.Error{
 			Message: "Id no encontrado",
 			Code:    400,
-			Flag:    true,
+			Type:    true,
 		}
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(errObj)
@@ -183,7 +183,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		err200 := models.Error{
 			Message: "ID Invalido",
 			Code:    400,
-			Flag:    true,
+			Type:    true,
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err200)
@@ -194,14 +194,14 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		err200 := models.Error{
 			Message: "Ingresar data valida para actualizar",
 			Code:    400,
-			Flag:    true,
+			Type:    true,
 		}
 		json.NewEncoder(w).Encode(err200)
 	}
 	json.Unmarshal(reqBody, &updatedProfile)
 
 	for i, t := range allProfiles {
-		if t.IDProfile == profileID {
+		if t.Dni == strconv.Itoa(profileID) {
 			allProfiles = append(allProfiles[:i], allProfiles[i+1:]...)
 
 			updatedProfile.IDProfile = t.IDProfile
@@ -229,7 +229,7 @@ func DeleteProfile(w http.ResponseWriter, r *http.Request) {
 	err200 := models.Error{
 		Message: "Sin Error",
 		Code:    http.StatusOK,
-		Flag:    false,
+		Type:    false,
 	}
 	if err != nil {
 		fmt.Fprintf(w, "Invalid User ID")
@@ -237,7 +237,7 @@ func DeleteProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for i, profile := range allProfiles {
-		if profile.IDProfile == profileID {
+		if profile.Dni == strconv.Itoa(profileID) {
 			deleted = true
 			allProfiles = append(allProfiles[:i], allProfiles[i+1:]...)
 		}
