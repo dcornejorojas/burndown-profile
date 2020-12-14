@@ -7,11 +7,12 @@ import (
 	"net/http"
 	"profile/api/models"
 	u "profile/api/utils"
+	"strconv"
 )
 
 var allUsers = models.AllUsers{
 	{
-		UserDni:  int64(2),
+		Dni:      "2",
 		Password: "PASS123",
 		Name:     "Nombre",
 		User:     "usuario1",
@@ -38,7 +39,7 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.Unmarshal(reqBody, &user)
-	user.UserDni = int64(len(allUsers) + 1)
+	user.Dni = strconv.Itoa(len(allUsers) + 1)
 	allUsers = append(allUsers, user)
 
 	w.Header().Set("Content-Type", "application/json")
