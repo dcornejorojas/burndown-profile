@@ -1,8 +1,8 @@
 package test
 
 import (
-	"burndown-ticket/app"
-	"burndown-ticket/controllers"
+	"burndown-profile/app"
+	"burndown-profile/controllers"
 	"fmt"
 
 	"net/http"

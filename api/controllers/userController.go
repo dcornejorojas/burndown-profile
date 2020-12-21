@@ -6,13 +6,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"profile/api/models"
+	"profile/api/utils"
 	u "profile/api/utils"
-	"strconv"
+	log "github.com/jeanphorn/log4go"
 )
 
 var allUsers = models.AllUsers{
 	{
-		Dni:      "2",
+		Dni:      "123",
 		Password: "PASS123",
 		Name:     "Nombre",
 		User:     "usuario1",
@@ -31,47 +32,49 @@ var HelloWorld = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-func CreateTask(w http.ResponseWriter, r *http.Request) {
+func (server *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
+	log.LOGGER("Routes").Info("POST - /user/ - Trying to create new user")
 	var user models.User
+	var errObj = models.Error{}
+	errObj.NoError()
+
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to process the body")
+		utils.ERROR(w, http.StatusUnprocessableEntity, err)
 		fmt.Fprintf(w, "Insert a Valid Task Data")
+		return
 	}
 
-	json.Unmarshal(reqBody, &user)
-	user.Dni = strconv.Itoa(len(allUsers) + 1)
-	allUsers = append(allUsers, user)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(allUsers)
-
-}
-
-func Login(w http.ResponseWriter, req *http.Request) {
-	login := make(map[string]interface{})
-	reqBody, err := ioutil.ReadAll(req.Body)
+	err = json.Unmarshal(reqBody, &user)
 	if err != nil {
-		fmt.Fprintf(w, "Insert Valid Data")
+		errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to get the new User")
+		utils.ERROR(w, http.StatusUnprocessableEntity, err)
+		fmt.Fprintf(w, "Failed to UnMarshal")
+		return
 	}
-	json.Unmarshal(reqBody, &login)
-	fmt.Println(login)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(reqBody)
-}
 
-func Logout(w http.ResponseWriter, req *http.Request) {
-	var login interface{}
-	reqBody, err := ioutil.ReadAll(req.Body)
+	user.Prepare()
+	err = user.Validate("")
 	if err != nil {
-		fmt.Fprintf(w, "Insert Valid Data")
+		errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to process Entity")
+		utils.ERROR(w, http.StatusUnprocessableEntity, err)
+		fmt.Fprintf(w, "Insert a Valid Task Data")
+		return
 	}
-	json.Unmarshal(reqBody, &login)
-	fmt.Println(login)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(reqBody)
+
+	fmt.Println(user)
+	newUser, err := user.SaveUser(server.DB)
+	if err != nil {
+		errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to create the user")
+		utils.ERROR(w, http.StatusUnprocessableEntity, err)
+		fmt.Fprintf(w, "Insert a Valid Task Data")
+		return
+	}
+	//allUsers = append(allUsers, user)
+
+	utils.ResponseJSON(w, http.StatusCreated, "Usuario agregado exitosamente", newUser, errObj)
+
 }
 
 // func getTasks(w http.ResponseWriter, r *http.Request) {
