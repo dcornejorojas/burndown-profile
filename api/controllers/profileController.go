@@ -108,7 +108,6 @@ func (server *Server) CreateProfile(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to create the user")
 		utils.ERROR(w, http.StatusUnprocessableEntity, err)
-		fmt.Fprintf(w, "Insert a Valid Task Data")
 		return
 	}
 
@@ -144,9 +143,9 @@ func (server *Server) GetProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	profile := models.Profile{}
-	profGotten, err := profile.FindProfileByID(server.DB, uint32(uid))
+	profGotten, err, code := profile.FindProfileByID(server.DB, uint32(uid))
 	if err != nil {
-		utils.ERROR(w, http.StatusBadRequest, err)
+		utils.ERROR(w, code, err)
 		return
 	}
 

@@ -18,6 +18,6 @@ func GetStore() string {
 		fmt.Println(err)
 		return ""
 	}
-	fmt.Printf("in all caps: %q\n", out)
+	fmt.Printf("Store: %q\n", out)
 	return string(out)
 }

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 	"fmt"
+	"net/http"
 
 	"github.com/jinzhu/gorm"
 )
@@ -25,6 +26,8 @@ type Profile struct {
 
 //AllProfile list of profiles
 type AllProfile []Profile
+
+var table = `profiles`
 
 //Prepare used to init a profile object
 func (p *Profile) Prepare() {
@@ -67,10 +70,8 @@ func (p *Profile) Validate(action string) error {
 
 //SaveProfile Save a profile in the DB
 func (p *Profile) SaveProfile(db *gorm.DB) (*Profile, error) {
-	fmt.Println(`Save profile`)
-	fmt.Println(p)
 	var err error
-	err = db.Debug().Table(`omnicontrol.profiles`).Create(&p).Error
+	err = db.Debug().Table(os.Getenv("DB_SCHEMA") + `.` + table).Create(&p).Error
 	if err != nil {
 		return &Profile{}, err
 	}
@@ -82,7 +83,7 @@ func (p *Profile) FindAllProfiles(db *gorm.DB) (*[]Profile, error) {
 	var err error
 	profiles := []Profile{}
 	if os.Getenv("DB_ENABLE") == "true" {
-		err = db.Debug().Table(`omnicontrol.profiles`).Limit(100).Find(&profiles).Error
+		err = db.Debug().Table(os.Getenv("DB_SCHEMA") + `.` + table).Limit(100).Find(&profiles).Error
 		if err != nil {
 			return &[]Profile{}, err
 		}
@@ -91,24 +92,26 @@ func (p *Profile) FindAllProfiles(db *gorm.DB) (*[]Profile, error) {
 }
 
 //FindProfileByID return specific Profile by his ID
-func (p *Profile) FindProfileByID(db *gorm.DB, uid uint32) (*Profile, error) {
+func (p *Profile) FindProfileByID(db *gorm.DB, uid uint32) (*Profile, error, int) {
 	var err error
 	if os.Getenv("DB_ENABLE") == "true" {
-		err = db.Debug().Model(Profile{}).Where("id = ?", uid).Take(&p).Error
-		if err != nil {
-			return &Profile{}, err
-		}
+		err = db.Debug().Table(os.Getenv("DB_SCHEMA") + `.` + table).Where("idprofile = ?", uid).Take(&p).Error
 		if gorm.IsRecordNotFoundError(err) {
-			return &Profile{}, errors.New("Profile Not Found")
+			return &Profile{}, errors.New("Perfil No Encontrado"), http.StatusNotFound
 		}
+		if err != nil {
+			fmt.Println(err)
+			return &Profile{}, err, http.StatusBadRequest
+		}
+		
 	}
-	return p, err
+	return p, err, http.StatusOK
 }
 
 func (p *Profile) UpdateProfile(db *gorm.DB, uid uint32) (*Profile, error) {
 
 	if os.Getenv("DB_ENABLE") == "true" {
-		db = db.Debug().Model(&Profile{}).Where("id = ?", uid).Take(&Profile{}).UpdateColumns(
+		db = db.Debug().Table(os.Getenv("DB_SCHEMA") + `.` + table).Where("idprofile = ?", uid).Take(&Profile{}).UpdateColumns(
 			map[string]interface{}{
 				"name":       p.Name,
 				"lastname":   p.Lastname,
@@ -121,7 +124,7 @@ func (p *Profile) UpdateProfile(db *gorm.DB, uid uint32) (*Profile, error) {
 			return &Profile{}, db.Error
 		}
 		// This is the display the updated Profile
-		err := db.Debug().Model(&Profile{}).Where("id = ?", uid).Take(&p).Error
+		err := db.Debug().Table(os.Getenv("DB_SCHEMA") + `.` + table).Where("idprofile = ?", uid).Take(&p).Error
 		if err != nil {
 			return &Profile{}, err
 		}
